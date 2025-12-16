@@ -3,7 +3,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
+//const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
+
+const MONGODB_URI =
+  process.env.NODE_ENV === "production"
+    ? process.env.MONGODB_URI_PROD
+    : process.env.MONGODB_URI_LOCAL;
 
 if (!process.env.MONGODB_URI) {
   if (process.env.NODE_ENV === "production") {
@@ -14,7 +19,7 @@ if (!process.env.MONGODB_URI) {
   );
 }
 
-const client = new MongoClient(uri);
+const client = new MongoClient(MONGODB_URI!);
 let isConnected = false;
 
 export async function connectToDatabase(): Promise<MongoClient> {
