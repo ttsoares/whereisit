@@ -3,14 +3,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-//const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
-
 const MONGODB_URI =
   process.env.NODE_ENV === "production"
     ? process.env.MONGODB_URI_PROD
     : process.env.MONGODB_URI_LOCAL;
 
-if (!process.env.MONGODB_URI) {
+if (!MONGODB_URI) {
   if (process.env.NODE_ENV === "production") {
     throw new Error("MONGODB_URI must be defined in production.");
   }
