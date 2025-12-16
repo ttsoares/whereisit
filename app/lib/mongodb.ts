@@ -1,23 +1,11 @@
 import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-const MONGODB_URI =
-  process.env.NODE_ENV === "production"
-    ? process.env.MONGODB_URI_PROD
-    : process.env.MONGODB_URI_LOCAL;
-
-if (!MONGODB_URI) {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("MONGODB_URI must be defined in production.");
-  }
-  console.log(
-    "No MONGODB_URI environment variable found. Using default URI for development."
-  );
+if (!process.env.MONGODB_URI) {
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-const client = new MongoClient(MONGODB_URI!);
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
 let isConnected = false;
 
 export async function connectToDatabase(): Promise<MongoClient> {
