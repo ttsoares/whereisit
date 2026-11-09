@@ -2,18 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/mongodb";
 import { MongoClient } from "mongodb";
 import { DVDDoc, DirectoryItem } from "@/app/lib/types";
+import { wildcardMatch } from "@/app/lib/functions";
+
+type SearchResult = { dvd: string; name: string; path: string };
 
 // Recursive function to search through contents
 async function searchContents(
   items: DirectoryItem[],
-  regex: RegExp,
-  results: { name: string; path: string }[]
+  query: string,
+  dvd: string,
+  results: SearchResult[]
 ) {
   for (const item of items) {
-    if (item.type === "file" && regex.test(item.name)) {
-      results.push({ name: item.name, path: item.path });
+    if (item.type === "file" && wildcardMatch(query, item.name)) {
+      results.push({ dvd, name: item.name, path: item.path });
     } else if (item.type === "directory" && item.contents) {
-      await searchContents(item.contents, regex, results);
+      await searchContents(item.contents, query, dvd, results);
     }
   }
 }
@@ -28,11 +32,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Convert the wildcard query to a regex pattern
-  const regexPattern = "^" + query.replace(/\*/g, ".*") + "$"; // Convert '*' to '.*'
-  const regex = new RegExp(regexPattern, "i"); // Case-insensitive
-
-  const results: { name: string; path: string }[] = [];
+  const results: SearchResult[] = [];
 
   try {
     const client: MongoClient = await connectToDatabase();
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     while (await cursor.hasNext()) {
       const dvd = await cursor.next();
       if (dvd) {
-        await searchContents(dvd.contents, regex, results);
+        await searchContents(dvd.contents, query, dvd.name, results);
       }
     }
 

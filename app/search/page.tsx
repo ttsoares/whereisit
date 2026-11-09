@@ -6,13 +6,12 @@ import Title from "../components/Title";
 import Input from "../components/Input";
 
 interface SearchResult {
+  dvd: string;
   name: string;
   path: string;
-  size?: number;
 }
 
 interface DisplayResult {
-  first: string;
   dvdName: string;
   last: string;
 }
@@ -47,21 +46,11 @@ export default function SearchPage() {
       if (response.ok) {
         setResults(result.results);
         //----------------
-        const transformedArray: DisplayResult[] = result.results.map((item: SearchResult) => {
-          const match = item.path.match(/(.*?\/)?(DVD-\d+)(\/.*)?/);
-          if (!match) {
-            throw new Error(`Invalid format: ${item}`);
-          }
-          const before = match[1]?.slice(0, -1) || ""; // Remove trailing "/" if present
-          const dvdPart = match[2];
-          const after = match[3]?.slice(1) || ""; // Remove leading "/" if present
-          const veryLast = after.split("/").pop();
-          return {
-            first: before,
-            dvdName: dvdPart,
-            last: veryLast,
-          };
-        });
+        // DVD name comes from the DB doc: paths can say "dvd-111" or "DVD-60"
+        const transformedArray: DisplayResult[] = result.results.map((item: SearchResult) => ({
+          dvdName: item.dvd,
+          last: item.name,
+        }));
 
         if (checkUniqies) {
           const uniques: DisplayResult[] = [];
