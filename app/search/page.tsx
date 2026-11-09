@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Button from "../components/Button";
 import Title from "../components/Title";
 import Input from "../components/Input";
+import Link from "next/link";
 
 interface SearchResult {
   dvd: string;
@@ -123,8 +124,11 @@ export default function SearchPage() {
               <li
                 className="px-1 transform transition duration-500 hover:scale-125 hover:cursor-pointer hover:font-extrabold bg-[#514e32] text-white font-bold hover:p-3 flex"
                 key={index}>
-                <span className="mr-2 font-bold text-red-500 text-2xl">{result.dvdName}</span>
-                <span>{result.last}</span>
+                {/* Whole line opens the DVD's contents, as on /oneDvd */}
+                <Link href={`/oneDvd?name=${encodeURIComponent(result.dvdName)}`} className="flex">
+                  <span className="mr-2 font-bold text-red-500 text-2xl">{result.dvdName}</span>
+                  <span>{result.last}</span>
+                </Link>
               </li>
             ))}
           </ul>
