@@ -25,3 +25,9 @@ body {
     text-wrap: balance;
   }
 }
+
+/* File names can be 200+ characters with no spaces: wrap them instead of
+   overflowing the centred lists off-screen (e.g. DVD-442) */
+li {
+  overflow-wrap: anywhere;
+}
