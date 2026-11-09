@@ -35,14 +35,6 @@ function DvdContentsPage() {
 
   const dvdName = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (dvdName.current) {
-      dvdName.current.value = initialVal || "";
-      if (initialVal) {
-        handleSearch();
-      }
-    }
-  }, [initialVal]);
 
   // Function to handle the search for a DVD by name
   const handleSearch = async () => {
@@ -80,6 +72,17 @@ function DvdContentsPage() {
       setMessage("Error: while searching for the DVD.");
     }
   };
+
+  useEffect(() => {
+    if (dvdName.current) {
+      dvdName.current.value = initialVal || "";
+      if (initialVal) {
+        // Load the DVD named in the URL (?name=DVD-222)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        handleSearch();
+      }
+    }
+  }, [initialVal]);
 
 
   // Recursive function to render the contents of the DVD

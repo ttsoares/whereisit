@@ -1,6 +1,6 @@
 export default function Input({ children, reference, defVal, placeHol, func }: {
   children?: React.ReactNode,
-  reference: React.RefObject<HTMLInputElement>,
+  reference: React.RefObject<HTMLInputElement | null>,
   defVal?: string
   placeHol?: string
   func?: () => void

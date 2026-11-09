@@ -22,6 +22,6 @@ npm run dev        # uses MONGODB_URI from .env.local
 ```
 
 `MONGODB_URI` is required (`.env.local` locally, Vercel environment variables in production).
-`SITE_URL` (optional, Vercel) sets the domain in the generated sitemap.
+`SITE_URL` (optional, Vercel) overrides the domain in `/sitemap.xml` and `/robots.txt` (default `https://whereisit.vercel.app`).
 
 Data model: one document per DVD in `whereisit.dvds`: `{ name: "DVD-222", contents: DirectoryItem[], date, comment }`.

@@ -2,6 +2,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { fixName, wildcardMatch, flattenFiles, wildcardToRegex } from "../app/lib/functions.ts";
+import type { DirectoryItem } from "../app/lib/types.ts";
 
 describe("fixName", () => {
   it("pads numbers to 3 digits and adds DVD-", () => {
@@ -76,6 +77,6 @@ describe("flattenFiles", () => {
       ] },
       { name: "c.txt", path: "/m/D/c.txt", type: "file", size: 1 },
     ] as const;
-    assert.deepEqual(flattenFiles(tree as any).map((f) => [f.name, f.size]), [["a.txt", 3], ["b.txt", 0], ["c.txt", 1]]);
+    assert.deepEqual(flattenFiles(tree as unknown as DirectoryItem[]).map((f) => [f.name, f.size]), [["a.txt", 3], ["b.txt", 0], ["c.txt", 1]]);
   });
 });
