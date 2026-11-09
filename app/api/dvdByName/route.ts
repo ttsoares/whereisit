@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const db: Db = client.db("whereisit");
 
     // Check if a DVD with the same name exists
-    const existingDvd = await db.collection<DVDDoc>("dvds").findOne({ name });
+    const existingDvd = await db.collection<DVDDoc>("dvds").findOne({ name }, { projection: { files: 0 } });
 
     if (existingDvd) {
       return NextResponse.json({

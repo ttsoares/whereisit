@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     // Query the database for DVDs with the calculated names
     const dvds = await db
       .collection<DVDDoc>("dvds")
-      .find({ name: { $in: dvdNames } })
+      .find({ name: { $in: dvdNames } }, { projection: { files: 0 } })
       .toArray();
 
     // $in returns storage order, which is not name order

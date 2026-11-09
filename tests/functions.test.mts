@@ -1,7 +1,7 @@
 // Run with: npm test   (Node >= 22.18 runs TypeScript directly)
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { fixName, wildcardMatch } from "../app/lib/functions.ts";
+import { fixName, wildcardMatch, flattenFiles, wildcardToRegex } from "../app/lib/functions.ts";
 
 describe("fixName", () => {
   it("pads numbers to 3 digits and adds DVD-", () => {
@@ -47,5 +47,35 @@ describe("wildcardMatch", () => {
     const t = Date.now();
     wildcardMatch("*a*a*a*a*a*a*a*a*a*a*X", "a".repeat(5000));
     assert.ok(Date.now() - t < 100);
+  });
+});
+
+describe("wildcardToRegex", () => {
+  // Must give the same answer as wildcardMatch, which the old in-JS search used
+  const cases: [string, string][] = [
+    ["tesla", "TESLA"], ["tesla", "Tesla.avi"], ["*Tesla*", "Nikola_TESLA_doc.avi"],
+    ["*.avi", "a.avi"], ["*.avi", "a.avi.txt"], ["*a*b*c", "xaybzc"], ["*a*b*c", "xcybza"],
+    ["*", ""], ["**", "anything"], ["ab*ab", "ab"], ["ab*ab", "abab"], ["a(b*", "A(bc"],
+    ["a.b", "aXb"], ["(", "x"], ["*[1]*", "Disc [1].iso"], ["*$^|+?{}\\*", "x$^|+?{}\\"],
+    ["*'s wars*", "All Wars Are Bankers' Wars"], ["*bankers' wars*", "All Wars Are Bankers' Wars"],
+  ];
+  for (const [pattern, text] of cases) {
+    it(`${pattern} vs ${text}`, () => {
+      assert.equal(new RegExp(wildcardToRegex(pattern), "is").test(text), wildcardMatch(pattern, text));
+    });
+  }
+});
+
+describe("flattenFiles", () => {
+  it("lists files depth-first with size 0 when missing", () => {
+    const tree = [
+      { name: "a.txt", path: "/m/D/a.txt", type: "file", size: 3 },
+      { name: "sub", path: "/m/D/sub", type: "directory", contents: [
+        { name: "b.txt", path: "/m/D/sub/b.txt", type: "file" },
+        { name: "empty", path: "/m/D/sub/empty", type: "directory" },
+      ] },
+      { name: "c.txt", path: "/m/D/c.txt", type: "file", size: 1 },
+    ] as const;
+    assert.deepEqual(flattenFiles(tree as any).map((f) => [f.name, f.size]), [["a.txt", 3], ["b.txt", 0], ["c.txt", 1]]);
   });
 });

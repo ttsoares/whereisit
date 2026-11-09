@@ -11,4 +11,14 @@ export interface DVDDoc {
   contents: DirectoryItem[];
   date: Date;
   comment: string;
+  // Derived from `contents` at save time, so search and Totals run inside Mongo
+  files?: FlatFile[];
+  fileCount?: number;
+  totalSize?: number;
+}
+
+export interface FlatFile {
+  name: string;
+  path: string;
+  size: number;
 }

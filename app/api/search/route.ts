@@ -1,50 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/mongodb";
 import { MongoClient } from "mongodb";
-import { DVDDoc, DirectoryItem } from "@/app/lib/types";
-import { wildcardMatch } from "@/app/lib/functions";
-
-type SearchResult = { dvd: string; name: string; path: string };
-
-// Recursive function to search through contents
-async function searchContents(
-  items: DirectoryItem[],
-  query: string,
-  dvd: string,
-  results: SearchResult[]
-) {
-  for (const item of items) {
-    if (item.type === "file" && wildcardMatch(query, item.name)) {
-      results.push({ dvd, name: item.name, path: item.path });
-    } else if (item.type === "directory" && item.contents) {
-      await searchContents(item.contents, query, dvd, results);
-    }
-  }
-}
+import { DVDDoc } from "@/app/lib/types";
+import { wildcardToRegex } from "@/app/lib/functions";
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json();
 
-  if (!query || typeof query !== "string") {
+  if (!query || typeof query !== "string" || query.length > 100) {
     return NextResponse.json(
-      { error: "Invalid query parameter." },
+      { error: "Invalid query parameter (1 to 100 characters)." },
       { status: 400 }
     );
   }
-
-  const results: SearchResult[] = [];
 
   try {
     const client: MongoClient = await connectToDatabase();
     const db = client.db("whereisit");
 
-    const cursor = db.collection<DVDDoc>("dvds").find();
-    while (await cursor.hasNext()) {
-      const dvd = await cursor.next();
-      if (dvd) {
-        await searchContents(dvd.contents, query, dvd.name, results);
-      }
-    }
+    // Runs inside Mongo on the flat `files` array: only the matches leave the DB
+    const results = await db
+      .collection<DVDDoc>("dvds")
+      .aggregate([
+        { $project: { _id: 0, name: 1, files: 1 } },
+        { $unwind: "$files" },
+        { $match: { "files.name": { $regex: wildcardToRegex(query), $options: "is" } } },
+        { $project: { dvd: "$name", name: "$files.name", path: "$files.path" } },
+      ])
+      .toArray();
 
     return NextResponse.json({ results });
   } catch (error) {

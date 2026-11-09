@@ -1,3 +1,5 @@
+import type { DirectoryItem, FlatFile } from "./types";
+
 export function fixName(name: string): string | null {
   let fixedName = name.trim();
 
@@ -37,4 +39,20 @@ export function wildcardMatch(pattern: string, text: string): boolean {
     pos = i + part.length;
   }
   return true;
+}
+
+// Every file of a DVD tree, depth-first (the order the old tree search returned)
+export function flattenFiles(contents: DirectoryItem[], out: FlatFile[] = []): FlatFile[] {
+  for (const item of contents) {
+    if (item.type === "file") out.push({ name: item.name, path: item.path, size: item.size ?? 0 });
+    else if (item.contents) flattenFiles(item.contents, out);
+  }
+  return out;
+}
+
+// Same matching as wildcardMatch, as a Mongo $regex (use options "is"): anchored,
+// everything escaped except "*". Repeated "*" collapse to limit backtracking.
+export function wildcardToRegex(pattern: string): string {
+  const parts = pattern.replace(/\*+/g, "*").split("*");
+  return "^" + parts.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$";
 }
