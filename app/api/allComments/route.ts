@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/mongodb";
 import { MongoClient, Db } from "mongodb";
-import { revalidateTag } from "next/cache";
+
+// Read the DB on every request; without this next build caches the GET
+export const dynamic = "force-dynamic";
 
 interface DVDDoc {
   name: string;
@@ -28,7 +30,6 @@ async function getAllComments(): Promise<DVDDoc[]> {
 
 export async function GET() {
   const dvds = await getAllComments();
-  revalidateTag("dvds");
   if (dvds.length !== 0) {
     const response = NextResponse.json({ dvds });
     response.headers.set("Cache-Control", "no-store, max-age=0");

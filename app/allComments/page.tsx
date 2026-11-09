@@ -14,6 +14,7 @@ interface DVDComment {
 
 export default function AllCommentsPage() {
   const [comments, setComments] = useState<DVDComment[]>([]);
+  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
 
   const navigate = useRouter();
 
@@ -21,27 +22,33 @@ export default function AllCommentsPage() {
     async function fetchComments() {
       try {
         const response = await fetch("/api/allComments");
-        if (!response.ok) {
+        // The API answers 404 when no DVD has a comment: that's an empty list, not an error
+        if (!response.ok && response.status !== 404) {
           throw new Error(`Error: ${response.statusText}`);
         }
 
         const data = await response.json();
         setComments(data.dvds || []);
+        setStatus("ok");
       } catch (error) {
         console.error("Error fetching comments:", error);
-      } finally {
+        setStatus("error");
       }
     }
 
     fetchComments();
   }, []);
 
-  if (comments.length === 0) {
+  if (status !== "ok" || comments.length === 0) {
     return (
       <div
         data-id="comments-page"
         className="flex flex-col justify-center items-center">
-        <Title>Loading...</Title>
+        <Title>
+          {status === "loading" ? "Loading..."
+            : status === "error" ? "Could not load the comments."
+              : "No DVD has a comment yet."}
+        </Title>
       </div>
     )
   }
