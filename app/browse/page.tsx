@@ -48,7 +48,13 @@ export default function BrowseDVDs() {
         return;
       }
 
-      const data = await response.json();
+      const data: { dvds: DVDDoc[] } = await response.json();
+      if (data.dvds.length === 0) {
+        setMessage("No DVDs found around " + nameOK);
+        return;
+      }
+      // Highlight the searched DVD (not a fixed slot: gaps like 76/413 shift positions)
+      setActiveIndex(Math.max(0, data.dvds.findIndex((d) => d.name === nameOK)));
       setFiveDvds(data.dvds);
     } catch (err) {
       console.error("Error fetching data:", err);

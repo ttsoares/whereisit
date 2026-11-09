@@ -73,6 +73,10 @@ export async function POST(req: Request) {
       .find({ name: { $in: dvdNames } })
       .toArray();
 
+    // $in returns storage order, which is not name order
+    const num = (d: DVDDoc) => parseInt(d.name.replace("DVD-", ""), 10);
+    dvds.sort((a, b) => num(a) - num(b));
+
     return NextResponse.json({ dvds });
   } catch (error) {
     console.error("Error in /api/browse:", error);
