@@ -7,9 +7,10 @@ import { wildcardToRegex } from "@/app/lib/functions";
 export async function POST(req: NextRequest) {
   const { query } = await req.json();
 
-  if (!query || typeof query !== "string" || query.length > 100) {
+  // Limits keep the regex cheap: each "*" is a ".*" the engine may backtrack over
+  if (!query || typeof query !== "string" || query.length > 100 || (query.match(/\*+/g) ?? []).length > 10) {
     return NextResponse.json(
-      { error: "Invalid query parameter (1 to 100 characters)." },
+      { error: "Invalid query: 1 to 100 characters, at most 10 \"*\"." },
       { status: 400 }
     );
   }
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
         { $unwind: "$files" },
         { $match: { "files.name": { $regex: wildcardToRegex(query), $options: "is" } } },
         { $project: { dvd: "$name", name: "$files.name", path: "$files.path" } },
-      ])
+      ], { maxTimeMS: 5000 })
       .toArray();
 
     return NextResponse.json({ results });
