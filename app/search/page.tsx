@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Button from "../components/Button";
 import Title from "../components/Title";
 import Input from "../components/Input";
@@ -32,6 +32,8 @@ export default function SearchPage() {
       return;
     }
 
+    // Keep the query in the URL so Back from a DVD restores the results
+    window.history.replaceState(null, "", `?q=${encodeURIComponent(query.current.value.trim())}`);
     setMessage("Searching...");
     try {
       const response = await fetch("/api/search", {
@@ -73,6 +75,16 @@ export default function SearchPage() {
     }
   };
 
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q && query.current) {
+      query.current.value = q;
+      // Re-run the search named in the URL (?q=*Tesla*)
+      handleSearchClick();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleChange = () => {
     setCheckUniques(!checkUniqies);
     // handleSearchClick();
@@ -92,7 +104,7 @@ export default function SearchPage() {
           <Button func={handleSearchClick}>
             Search
           </Button>
-          <Button func={() => { setResults([]); query.current!.value = ""; setMessage("") }}>
+          <Button func={() => { setResults([]); query.current!.value = ""; setMessage(""); window.history.replaceState(null, "", window.location.pathname) }}>
             Clear
           </Button>
           <label>
