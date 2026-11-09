@@ -66,27 +66,10 @@ export default function BrowseDVDs() {
     setActiveIndex(index);
   }
 
-  function incrementIndexCollection() {
-    const numericPart = parseInt(dvdName.current!.value.replace("DVD-", ""), 10) + 5;
-    let newName = ""
-    if (numericPart < 10) {
-      newName = "DVD-" + "00" + String(numericPart);
-    } else {
-      newName = numericPart < 100 ? "DVD-" + "0" + String(numericPart) : "DVD-" + String(numericPart);
-    }
-    dvdName.current!.value = newName;
-    handleSearch();
-  }
-
-  function decrementIndexcollection() {
-    const numericPart = parseInt(dvdName.current!.value.replace("DVD-", ""), 10) - 5;
-    let newName = ""
-    if (numericPart < 10) {
-      newName = "DVD-" + "00" + String(numericPart);
-    } else {
-      newName = numericPart < 100 ? "DVD-" + "0" + String(numericPart) : "DVD-" + String(numericPart);
-    }
-    dvdName.current!.value = newName;
+  // Move the window by `step` DVDs; never below DVD-001
+  function moveWindow(step: number) {
+    const n = Math.max(1, parseInt(dvdName.current!.value.replace("DVD-", ""), 10) + step);
+    dvdName.current!.value = `DVD-${String(n).padStart(3, "0")}`;
     handleSearch();
   }
 
@@ -109,7 +92,7 @@ export default function BrowseDVDs() {
         <div className="flex flex-col items-center justify-center">
           <div className="flex  flex-col justify-center items-center">
             <SlArrowUpCircle
-              onClick={decrementIndexcollection}
+              onClick={() => moveWindow(-5)}
               className="text-2xl text-yellow-300 my-1 hover:cursor-crosshair hover:text-red-500" />
             <ul >
               {fiveDvds.map((dvd, index) => (
@@ -124,7 +107,7 @@ export default function BrowseDVDs() {
               ))}
             </ul>
             <SlArrowDownCircle
-              onClick={incrementIndexCollection}
+              onClick={() => moveWindow(5)}
               className="text-2xl text-yellow-300 my-1 hover:cursor-crosshair hover:text-red-500" />
           </div>
           {/* List the contents of each DVD */}

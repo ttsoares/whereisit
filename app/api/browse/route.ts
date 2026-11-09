@@ -25,47 +25,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // return error if the target number is too small
-    if (targetNumber < 3) {
-      return NextResponse.json(
-        { error: "Reached the beginning of the collection" },
-        { status: 400 }
-      );
-    }
-
     const client: MongoClient = await connectToDatabase();
     const db: Db = client.db("whereisit");
 
-    const collection = db.collection<DVDDoc>("dvds");
-    const estimate = await collection.estimatedDocumentCount();
-
-    // 76 and 413 are dead.
-    // the number of registers is 2 less than the number on DVD's name
-    const lastPossibleNumber = estimate - 2;
-    if (targetNumber > lastPossibleNumber) {
-      return NextResponse.json(
-        { error: "Reached the end of the collection" },
-        { status: 400 }
-      );
-    }
-
-    // Calculate the range of DVD numbers to fetch
-    const dvdNumbers = [
-      targetNumber - 2,
-      targetNumber - 1,
-      targetNumber,
-      targetNumber + 1,
-      targetNumber + 2,
-    ];
-    const dvdNames = dvdNumbers.map((num) => {
-      if (num < 10) {
-        return `DVD-00${num}`;
-      }
-      if (num < 100) {
-        return `DVD-0${num}`;
-      }
-      return `DVD-${num}`;
-    });
+    // Window of 5 around the target; the DB itself decides where the collection starts and ends
+    const dvdNames = [-2, -1, 0, 1, 2]
+      .map((d) => targetNumber + d)
+      .filter((n) => n >= 1)
+      .map((n) => `DVD-${String(n).padStart(3, "0")}`);
 
     // Query the database for DVDs with the calculated names
     const dvds = await db
@@ -76,6 +43,13 @@ export async function POST(req: Request) {
     // $in returns storage order, which is not name order
     const num = (d: DVDDoc) => parseInt(d.name.replace("DVD-", ""), 10);
     dvds.sort((a, b) => num(a) - num(b));
+
+    if (dvds.length === 0) {
+      return NextResponse.json(
+        { error: `No DVDs around ${dvdName}: end of the collection.` },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({ dvds });
   } catch (error) {
