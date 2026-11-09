@@ -138,3 +138,6 @@ dist
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
 
+
+# Rewritten by next dev / next build (paths differ between them)
+next-env.d.ts
