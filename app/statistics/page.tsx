@@ -32,11 +32,11 @@ export default function FileStatistics() {
   function nFormatter(num: number, digits: number) {
     const lookup = [
       { value: 1, symbol: "" },
-      { value: 1e3, symbol: " Kb" },
-      { value: 1e6, symbol: " Mb" },
-      { value: 1e9, symbol: " Gb" },
-      { value: 1e12, symbol: " Tb" },
-      { value: 1e15, symbol: " Pb" },
+      { value: 1e3, symbol: " KB" },
+      { value: 1e6, symbol: " MB" },
+      { value: 1e9, symbol: " GB" },
+      { value: 1e12, symbol: " TB" },
+      { value: 1e15, symbol: " PB" },
     ];
     // Remove trailing zeros from the string representation of a number
     // e.g. "100.00" -> "100"
