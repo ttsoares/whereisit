@@ -31,3 +31,8 @@ body {
 li {
   overflow-wrap: anywhere;
 }
+
+/* File lists use at most 80% of the screen width, so long names wrap earlier */
+ul {
+  max-width: 80vw;
+}
