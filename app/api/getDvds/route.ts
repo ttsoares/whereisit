@@ -3,6 +3,9 @@ import { connectToDatabase } from "@/app/lib/mongodb";
 import { MongoClient, Db } from "mongodb";
 import { DVDDoc, DirectoryItem } from "@/app/lib/types";
 
+// Without this Next 14 prerenders the GET at build time and the totals freeze
+export const dynamic = "force-dynamic";
+
 async function calculateFileStatistics() {
   const client: MongoClient = await connectToDatabase();
   const db: Db = client.db("whereisit");
